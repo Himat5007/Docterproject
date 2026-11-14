@@ -83,7 +83,7 @@ const AdminDashboard = ({ token }) => {
     if (!window.confirm(`ایا تاسو غواړئ د ډاکټر (${user.name}) په اکاونټ کې داخل شئ؟`)) return;
 
     try {
-      const res = await axios.post(`http://localhost:5000/api/admin/impersonate/${user.id}`, {}, {
+      const res = await axios.post(`https://docterproject-backend.onrender.com/api/admin/impersonate/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       localStorage.setItem('adminToken', token);
