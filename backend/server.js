@@ -247,6 +247,14 @@ app.post('/api/upload', authenticateToken, upload.fields([{ name: 'header' }, { 
 app.get('/api/settings', authenticateToken, (req, res) => {
   res.json(printSettings[req.user.id] || { headerUrl: '', footerUrl: '' });
 });
+app.get('/api/download-users', (req, res) => {
+  const file = path.join(__dirname, 'users.json');
+  if (fs.existsSync(file)) {
+    res.download(file, 'users.json');
+  } else {
+    res.status(404).send('فایل ونه موندل شو');
+  }
+});
 
 // ===== 11. د اډمین جوړول =====
 const createDefaultAdmin = async () => {
