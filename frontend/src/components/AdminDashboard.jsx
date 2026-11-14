@@ -4,17 +4,15 @@ import axios from 'axios';
 const AdminDashboard = ({ token }) => {
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState({ text: '', type: '' });
-  
-  // 🚨 نوی سټیټ: د لټون کلمې لپاره
   const [searchTerm, setSearchTerm] = useState(''); 
-
   const adminInfo = JSON.parse(localStorage.getItem('user') || '{}');
   
   const [newUser, setNewUser] = useState({ name: '', phone: '', password: '' });
   const [editUser, setEditUser] = useState(null);
 
+  // 🚨 دلته مو localhost د Render لینک سره بدل کړ
   const api = axios.create({
-    baseURL: 'http://localhost:5000/api/admin',
+    baseURL: 'https://docterproject.onrender.com/api/admin',
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -32,7 +30,6 @@ const AdminDashboard = ({ token }) => {
     setTimeout(() => setMessage({ text: '', type: '' }), 4000);
   };
 
-  // ۱. نوی یوزر جوړول
   const handleCreateUser = async (e) => {
     e.preventDefault();
     if (!newUser.name || !newUser.phone || !newUser.password) return showMsg('ټول معلومات ډک کړئ!', 'error');
@@ -46,7 +43,6 @@ const AdminDashboard = ({ token }) => {
     }
   };
 
-  // ۲. د یوزر معلومات بدلول
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     if (!editUser.name || !editUser.phone) return showMsg('نوم او نمبر باید وي!', 'error');
@@ -70,20 +66,19 @@ const AdminDashboard = ({ token }) => {
     }
   };
 
-  // ۳. یوزر تاییدول
   const approveUser = async (id) => {
     await api.put(`/approve/${id}`);
     fetchUsers();
     showMsg('✅ کارونکی تایید شو!');
   };
 
-  // ۴. د بل چا په اکاونټ کې داخلیدل
   const loginAsUser = async (user) => {
     if (user.role === 'admin') return;
     if (!window.confirm(`ایا تاسو غواړئ د ډاکټر (${user.name}) په اکاونټ کې داخل شئ؟`)) return;
 
     try {
-      const res = await axios.post(`https://docterproject-backend.onrender.com/api/admin/impersonate/${user.id}`, {
+      // 🚨 دلته مو هم localhost د Render لینک سره بدل کړ
+      const res = await axios.post(`https://docterproject.onrender.com/api/admin/impersonate/${user.id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       localStorage.setItem('adminToken', token);
@@ -94,7 +89,6 @@ const AdminDashboard = ({ token }) => {
     } catch (err) { alert('خطا راغله!'); }
   };
 
-  // 🚨 د لټون منطق: د نوم یا نمبر له مخې کارونکي فلټر کوي
   const filteredUsers = users.filter(u => {
     const search = searchTerm.toLowerCase();
     return (
@@ -113,7 +107,6 @@ const AdminDashboard = ({ token }) => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* د نوي یوزر جوړولو فورم */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-bold mb-4 border-b pb-2 text-blue-800">➕ نوی ډاکټر راجستر کړئ</h3>
           <form onSubmit={handleCreateUser} className="space-y-3">
@@ -124,7 +117,6 @@ const AdminDashboard = ({ token }) => {
           </form>
         </div>
 
-        {/* د اډمین خپل پروفایل بدلول */}
         <div className="bg-purple-50 p-6 rounded-xl shadow-sm border border-purple-200">
           <h3 className="text-lg font-bold mb-4 border-b border-purple-200 pb-2 text-purple-800">👑 خپل (اډمین) معلومات بدل کړئ</h3>
           <form onSubmit={(e) => {
@@ -142,10 +134,7 @@ const AdminDashboard = ({ token }) => {
         </div>
       </div>
 
-      {/* د ټولو کارونکو لیست */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-6">
-        
-        {/* 🚨 د لیست پورتنۍ برخه (شمېر او لټون) */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b pb-4">
           <div>
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -159,7 +148,6 @@ const AdminDashboard = ({ token }) => {
             </h3>
           </div>
           
-          {/* د لټون بکس */}
           <div className="w-full md:w-72 relative">
             <input 
               type="text" 
@@ -172,7 +160,6 @@ const AdminDashboard = ({ token }) => {
           </div>
         </div>
         
-        {/* د یوزر د سمولو (Edit) فورم - مودال */}
         {editUser && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
@@ -201,7 +188,6 @@ const AdminDashboard = ({ token }) => {
               </tr>
             </thead>
             <tbody>
-              {/* 🚨 دلته filteredUsers کارول کیږي */}
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan="4" className="text-center p-6 text-red-500 font-bold bg-red-50">
