@@ -10,14 +10,17 @@ const Auth = ({ setToken }) => {
     e.preventDefault();
     setMessage('');
     try {
-      const url = isLogin ? 'http://localhost:5000/api/auth/login' : 'http://localhost:5000/api/auth/register';
+      // 🚨 دلته مو لینکونه د Render آنلاین سرور ته بدل کړل
+      const baseUrl = 'https://docterproject.onrender.com/api';
+      const url = isLogin ? `${baseUrl}/auth/login` : `${baseUrl}/auth/register`;
+      
       const res = await axios.post(url, form);
       
       if (isLogin) {
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
         setToken(res.data.token);
-        window.location.reload(); // د اپلیکیشن تازه کول
+        window.location.reload();
       } else {
         setMessage('✅ راجستر شو! د اډمین تایید ته انتظار وکړئ.');
         setIsLogin(true);
