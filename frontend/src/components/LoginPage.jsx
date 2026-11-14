@@ -19,14 +19,14 @@ export default function LoginPage({ setToken }) {
     setError(null);
     setSuccessMsg(null);
 
-    try {
-      if (isLogin) {
-        // === د لاګین منطق ===
-        const res = await axios.post('https://docterproject-backend.onrender.com/api/auth/login', { 
-          username, 
-          password,
-          department
-        });
+   try {
+  if (isLogin) {
+    // === د لاګین منطق ===
+    const res = await axios.post('https://docterproject.onrender.com/api/auth/login', { 
+      username, 
+      password,
+      department
+    });
         
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
