@@ -28,10 +28,10 @@ function App() {
   const [isSaving, setIsSaving] = useState(false);
 
   // د API اصلي شی (ټوکن پکې دی)
-  const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
-    headers: { Authorization: `Bearer ${token}` }
-  });
+const api = axios.create({
+  baseURL: 'https://docterproject-backend.onrender.com/api', // ستاسو د Render لینک
+  headers: { Authorization: `Bearer ${token}` }
+});
 
   // د پرینټ سیسټم
   const printRef = useRef();
