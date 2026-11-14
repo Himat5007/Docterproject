@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Environment variables (پاسورډونه او سیکرټ کیلي)
+.env
+.env.local
+
+# Build files
+dist/
+build/
+
+# Uploaded files and databases
+backend/uploads/
+backend/users.json
+backend/patients.json
+backend/medicines.json
+backend/settings.json
+
+# OS files
+.DS_Store
+Thumbs.db
