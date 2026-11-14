@@ -22,7 +22,7 @@ export default function LoginPage({ setToken }) {
     try {
       if (isLogin) {
         // === د لاګین منطق ===
-        const res = await axios.post('http://localhost:5000/api/auth/login', { 
+        const res = await axios.post('https://docterproject-backend.onrender.com/api/auth/login', { 
           username, 
           password,
           department
