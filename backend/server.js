@@ -9,37 +9,29 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-// ===== 1. د CORS تنظیمات (د Netlify او Render لپاره) =====
+// ===== 1. د CORS تنظیمات =====
 const allowedOrigins = [
-  'https://docterproject.netlify.app', // ستاسو د Netlify لینک
-  'http://localhost:5173', // د محلي ازموینې لپاره
+  'https://docterproject.netlify.app',
+  'http://localhost:5173',
   'http://localhost:3000'
 ];
-
 app.use(cors({
   origin: function (origin, callback) {
-    // که origin موجود نه وي (لکه د موبایل اپ یا Postman) یا په لیست کې وي
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) callback(null, true);
+    else callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-
+app.options('*', cors());
 app.use(express.json());
 
 // ===== 2. د امنیت تنظیمات =====
-// 🚨 په اصلي پروژه کې دا سټرینګ یو ځانګړی او پیچلی کړئ
 const JWT_SECRET = process.env.JWT_SECRET || 'CLINIC_SUPER_SECRET_KEY_2026'; 
-
-// د بریدونو مخنیوی (Rate Limiter)
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقیقې
-  max: 50, // په 15 دقیقو کې 50 ځله هڅه (د ټسټ لپاره یې لوړ کړی، په اصلي کې 10 کړئ)
+  windowMs: 15 * 60 * 1000, 
+  max: 50, 
   message: { message: 'ډیرې ناوړه هڅې! مهرباني وکړئ وروسته بیا هڅه وکړئ.' }
 });
 
@@ -56,13 +48,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ===== 4. د ډیټابیس (JSON فایلونو) تنظیمات =====
+// ===== 4. د JSON فایلونو ډیټابیس =====
 const USERS_FILE = path.join(__dirname, 'users.json');
 const DB_FILE = path.join(__dirname, 'patients.json');
 const MEDICINES_FILE = path.join(__dirname, 'medicines.json');
 const SETTINGS_FILE = path.join(__dirname, 'settings.json');
 
-// د فایلونو خوندي لوستل (که فایل خالي یا خراب وي، کریش نه کوي)
 const readData = (file, defaultVal = []) => {
   if (!fs.existsSync(file)) return defaultVal;
   try {
@@ -84,7 +75,7 @@ let patientsDB = readData(DB_FILE, []);
 let medicinesDB = readData(MEDICINES_FILE, []);
 let printSettings = readData(SETTINGS_FILE, {});
 
-// ===== 5. د امنیت مډل (Middleware) =====
+// ===== 5. د امنیت مډل =====
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'اجازه نلرئ، بیا لاګین شئ!' });
@@ -244,7 +235,6 @@ app.get('/api/patients', authenticateToken, (req, res) => {
 app.post('/api/upload', authenticateToken, upload.fields([{ name: 'header' }, { name: 'footer' }]), (req, res) => {
   if (!printSettings[req.user.id]) printSettings[req.user.id] = { headerUrl: '', footerUrl: '' };
   
-  // 🚨 د Render لینک په اتوماتیک ډول اخیستل کیږي
   const baseUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000';
   
   if (req.files && req.files['header']) printSettings[req.user.id].headerUrl = `${baseUrl}/uploads/${req.files['header'][0].filename}`;
