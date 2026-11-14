@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* د اپلیکیشن اصلي تنظیمات */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f3f4f6; /* د Tailwind bg-gray-100 سره سمون لري */
+}
+
+/* د چاپ کولو لپاره مهم تنظیمات */
+@media print {
+  body {
+    background-color: white !important;
+    -webkit-print-color-adjust: exact; /* د جدول د رنګونو سم چاپ لپاره */
+    print-color-adjust: exact;
+  }
+  
+  /* د چاپ پر مهال د تڼیو او نورو غیر ضروري شیانو پټول */
+  .no-print {
+    display: none !important;
+  }
+}
