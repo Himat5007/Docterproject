@@ -27,9 +27,9 @@ function App() {
   const [registeredMeds, setRegisteredMeds] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // د API اصلي شی (ټوکن پکې دی)
+// د API اصلي شی (ټوکن پکې دی)
 const api = axios.create({
-  baseURL: 'https://docterproject-backend.onrender.com/api', // ستاسو د Render لینک
+  baseURL: 'https://docterproject.onrender.com/api', // 🚨 -backend مې پکې پاک کړ
   headers: { Authorization: `Bearer ${token}` }
 });
 
