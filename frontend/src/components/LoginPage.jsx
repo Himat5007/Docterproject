@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 export default function LoginPage({ setToken }) {
-  const [isLogin, setIsLogin] = useState(true); // 🚨 نوی سټیټ: د لاګین او راجستر ترمنځ د بدلون لپاره
-  const [name, setName] = useState(''); // 🚨 نوی سټیټ: د راجستر لپاره نوم
-  const [username, setUsername] = useState(''); // دلته یوزرنیم یا موبایل نمبر راځي
+  const [isLogin, setIsLogin] = useState(true); 
+  const [name, setName] = useState(''); 
+  const [username, setUsername] = useState(''); 
   const [password, setPassword] = useState('');
   const [department, setDepartment] = useState('Admin');
   
@@ -13,20 +13,23 @@ export default function LoginPage({ setToken }) {
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // 🚨 د Render اصلي لینک (د -backend پرته)
+  const API_BASE_URL = 'https://docterproject.onrender.com/api';
+
   async function handleSubmit(e) {
     e.preventDefault();
     setBusy(true);
     setError(null);
     setSuccessMsg(null);
 
-   try {
-  if (isLogin) {
-    // === د لاګین منطق ===
-    const res = await axios.post('https://docterproject.onrender.com/api/auth/login', { 
-      username, 
-      password,
-      department
-    });
+    try {
+      if (isLogin) {
+        // === د لاګین منطق ===
+        const res = await axios.post(`${API_BASE_URL}/auth/login`, { 
+          username, 
+          password,
+          department
+        }, { timeout: 60000 }); // 60 ثانیې انتظار د Render د ویښیدو لپاره
         
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
@@ -34,26 +37,30 @@ export default function LoginPage({ setToken }) {
         window.location.reload();
       } else {
         // === د راجستر منطق ===
-        await axios.post('http://localhost:5000/api/auth/register', { 
+        await axios.post(`${API_BASE_URL}/auth/register`, { 
           name: name, 
-          phone: username, // د راجستر پر مهال یوزرنیم د موبایل نمبر په توګه کار کیږي
+          phone: username, 
           password 
-        });
+        }, { timeout: 60000 });
         
         setSuccessMsg('✅ په بریالیتوب سره راجستر شو! د اډمین د تایید وروسته به وتوانئ ننوځئ.');
         setName('');
         setUsername('');
         setPassword('');
-        setIsLogin(true); // بیرته لاګین ته ځو
+        setIsLogin(true); 
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'د معلوماتو لیږلو په وخت کې خطا راغله!');
+      // که سرور ویده وي، دا پیغام ښکاري
+      if (err.code === 'ECONNABORTED') {
+        setError('سرور ځواب نه ورکوي، مهرباني وکړئ لږ انتظار وکړئ او بیا هڅه وکړئ.');
+      } else {
+        setError(err.response?.data?.message || 'د معلوماتو لیږلو په وخت کې خطا راغله!');
+      }
     } finally {
       setBusy(false);
     }
   }
 
-  // د لاګین او راجستر ترمنځ د بدلون فعالیت
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setError(null);
@@ -108,14 +115,12 @@ export default function LoginPage({ setToken }) {
               {isLogin ? 'Welcome back! Please enter your details.' : 'Create a new account to get started.'}
             </p>
 
-            {/* د خطا پیغام */}
             {error && (
               <div style={{ background: '#ef4444', color: '#fff', padding: '10px', borderRadius: '8px', fontSize: '13px', marginBottom: '15px', textAlign: 'center' }}>
                 {error}
               </div>
             )}
 
-            {/* د بریالیتوب پیغام */}
             {successMsg && (
               <div style={{ background: '#10b981', color: '#fff', padding: '10px', borderRadius: '8px', fontSize: '13px', marginBottom: '15px', textAlign: 'center' }}>
                 {successMsg}
@@ -124,7 +129,6 @@ export default function LoginPage({ setToken }) {
 
             <form className="login-form" onSubmit={handleSubmit}>
               
-              {/* د نوم بکس (یوازې د راجستر پر مهال ښکاري) */}
               {!isLogin && (
                 <div>
                   <label style={{ color: '#9ca3af', fontSize: '12px', marginBottom: '6px', display: 'block' }}>Full Name</label>
@@ -139,10 +143,9 @@ export default function LoginPage({ setToken }) {
                 </div>
               )}
 
-              {/* یوزرنیم / موبایل نمبر */}
               <div>
                 <label style={{ color: '#9ca3af', fontSize: '12px', marginBottom: '6px', display: 'block' }}>
-                  {isLogin ? 'Username / Phone' : 'Username / Phone'}
+                  {isLogin ? 'Username / Phone' : 'Phone Number'}
                 </label>
                 <input 
                   type="text" 
@@ -154,7 +157,6 @@ export default function LoginPage({ setToken }) {
                 />
               </div>
 
-              {/* پاسورډ */}
               <div>
                 <label style={{ color: '#9ca3af', fontSize: '12px', marginBottom: '6px', display: 'block' }}>Password</label>
                 <div className="password-wrapper">
@@ -180,7 +182,6 @@ export default function LoginPage({ setToken }) {
                 </div>
               </div>
 
-              {/* څانګه / Department (یوازې د لاګین پر مهال ښکاري) */}
               {isLogin && (
                 <div>
                   <label style={{ color: '#9ca3af', fontSize: '12px', marginBottom: '6px', display: 'block' }}>Department</label>
@@ -196,14 +197,12 @@ export default function LoginPage({ setToken }) {
                 </div>
               )}
 
-              {/* ننوتل / راجستر تڼۍ */}
               <button type="submit" disabled={busy} className="submit-btn">
                 {busy ? 'Please wait…' : (isLogin ? 'Sign In' : 'Register')}
               </button>
 
             </form>
 
-            {/* 🚨 د لاګین او راجستر ترمنځ د بدلون تڼۍ */}
             <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#9ca3af' }}>
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <span 
