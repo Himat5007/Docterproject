@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
@@ -9,28 +10,18 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// ===== 1. د CORS تنظیمات =====
-const allowedOrigins = [
-  'https://docterproject.netlify.app',
-  'http://localhost:5173',
-  'http://localhost:3000'
-];
+// ===== 1. د CORS تنظیمات (ساده او خوندي) =====
+// دا برخه تضمین کوي چې Netlify کولی شي ستاسو د Render سرور سره اړیکه ونیسي
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) callback(null, true);
-    else callback(new Error('Not allowed by CORS'));
-  },
+  origin: ['https://docterproject.netlify.app', 'http://localhost:5173', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
-// 🚨 دا لاین بدل شوی دی ترڅو د Render خطا حل شي
-app.options(/(.*)/, cors());
 app.use(express.json());
 
 // ===== 2. د MongoDB سره نښلول =====
-// دا به د Render په Environment Variables کې د MONGO_URI څخه ولوستل شي
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
@@ -41,7 +32,7 @@ if (!MONGO_URI) {
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 }
 
-// ===== 3. د ډیټابیس ماډلونه (Schemas) =====
+// ===== 3. د ډیټابیس ماډلونه =====
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
@@ -71,7 +62,7 @@ const settingSchema = new mongoose.Schema({
   footerUrl: { type: String, default: '' }
 }, { toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
-// د فرنټ انډ سره د سمون لپاره، د _id پر ځای id کاروو
+// د React سره د سمون لپاره، د _id پر ځای id کاروو
 userSchema.set('toJSON', { virtuals: true, transform: (doc, ret) => { ret.id = ret._id; delete ret._id; delete ret.password; } });
 medicineSchema.set('toJSON', { virtuals: true, transform: (doc, ret) => { ret.id = ret._id; delete ret._id; } });
 patientSchema.set('toJSON', { virtuals: true, transform: (doc, ret) => { ret.id = ret._id; delete ret._id; } });
@@ -82,7 +73,7 @@ const Medicine = mongoose.model('Medicine', medicineSchema);
 const Patient = mongoose.model('Patient', patientSchema);
 const Setting = mongoose.model('Setting', settingSchema);
 
-// ===== 4. د امنیت تنظیمات =====
+// ===== 4. د امنیت او فایل تنظیمات =====
 const JWT_SECRET = process.env.JWT_SECRET || 'CLINIC_SUPER_SECRET_KEY_2026'; 
 
 const loginLimiter = rateLimit({
@@ -91,6 +82,10 @@ const loginLimiter = rateLimit({
   message: { message: 'ډیرې ناوړه هڅې! مهرباني وکړئ وروسته بیا هڅه وکړئ.' }
 });
 
+// د عکس اپلوډ لپاره موقتي فولډر
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+app.use('/uploads', express.static(uploadDir));
 const upload = multer({ dest: 'uploads/' });
 
 const authenticateToken = (req, res, next) => {
