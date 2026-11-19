@@ -10,15 +10,21 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// ===== 1. د CORS تنظیمات (خورا ساده او تضمین شوی) =====
+// ===== 1. د CORS تنظیمات (ساده، خوندي او د preflight لپاره سم) =====
 app.use(cors({
-  origin: '*', // اجازه د هر ځای څخه (د Netlify لپاره)
+  origin: 'https://docterproject.netlify.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
+
+// 🚨 دا لاین باید پاک شي ځکه چې Express 5 د '*' سره ستونزه لري
+// app.options('*', cors());  <-- دا لاین پاک کړئ
+
 app.use(express.json());
 
-// ===== 2. د MongoDB سره نښلول (د کریش مخنیوی لپاره) =====
+// ===== 2. د MongoDB سره نښلول =====
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://newalmadinainstitute_db_user:Himatafghan12345@cluster0.pcbzkb7.mongodb.net/clinic?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
@@ -70,7 +76,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'CLINIC_SUPER_SECRET_KEY_2026';
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 100, // د ټسټ لپاره یې لوړ کړی، وروسته یې 10 ته راکم کړئ
+  max: 100,
   message: { message: 'ډیرې ناوړه هڅې! مهرباني وکړئ وروسته بیا هڅه وکړئ.' }
 });
 
